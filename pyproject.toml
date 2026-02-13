@@ -2,7 +2,6 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-
 [project]
 name = "mazegenerator"
 version = "1.0.0"
