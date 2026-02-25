@@ -120,7 +120,7 @@ class MazeParser:
         algo_str = self.parameters.get("ALGORITHM")
         if algo_str is not None:
             self.algorithm = algo_str.strip()
-            if self.algorithm not in ["Backtracking", "Eller"]:
+            if self.algorithm not in ["DFS", "Eller"]:
                 print(f"Parsing error: '{self.algorithm}' not supported")
                 sys.exit(1)
         seed_str = self.parameters.get("SEED")

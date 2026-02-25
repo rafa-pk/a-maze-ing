@@ -60,7 +60,7 @@ class MazeGenerator:
         self.exit_point = exit_point
         self.pattern_cells: set[tuple[int, int]] = set()
         if algo is None:
-            self.algo = "Backtracking"
+            self.algo = "DFS"
         else:
             self.algo = algo
         if seed is not None:
@@ -83,7 +83,7 @@ class MazeGenerator:
         if self.algo == "DFS":
             self.DFS(self)
         elif self.algo == "Eller":
-            self.Kruskal(self)
+            self.Eller(self)
 
     def get_cell(self, x: int, y: int) -> object:
         return self.grid[y][x]
@@ -211,16 +211,33 @@ class MazeGenerator:
             self._generate()
 
         def _generate(self) -> None:
-            self._init_row(self.grid[0])
-            for row in self.grid:
+            self._init_row(self.maze.grid[0])
+            for row in self.maze.grid:
                 _carve_row(row)
+            for cell in self.maze.grid[0]:
+                print(f"{cell.set_id}")
             
-        def _init_row(self, row: list[Cell]) -> None:
-            for ix in range(len(row) - 1):
-                
-            
-            
-            
+        def _init_row(self, row: list["MazeGenerator.Cell"]) -> None:
+            i = 0
+            ix = 0
+
+            for cell in row:
+                cell.set_id = i
+                i += 1
+            while ix in range(len(row) - 1):
+                cell_a = row[ix]
+                cell_b = row[ix + 1]
+                merging = random.choice(["True", "False"])
+                if merging == "True":
+                    cell_b.set_id = cell_a.set_id
+                    cell_a.east = False
+                    cell_b.west = False
+                ix += 1
+
+        def _carve_row(self, row: list["MazeGenerator.Cell"]):
+            #itterate over row and assign set_ids if not already
+            #randomly chose at least one south wall/set to take down
+            #take it down and assign the wall underneath to the corresponding set
 
     class BFS:
         def __init__(self, maze: "MazeGenerator") -> None:
