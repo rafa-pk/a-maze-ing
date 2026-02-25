@@ -33,7 +33,7 @@ class AMazeIng:
                                      #visualizer=self.maze_animation)
         self.generator.BFS(self.generator)
         self.generator.create_output_file(self.parameters.output_file)
-        #print(f"Shortest path: {self.solver.get_path_string()}")
+        print(f"Shortest path: {self.solver.get_path_string()}")
         self.generator.print_grid(path=self.solver.path)
         for row in self.generator.grid:
             for cell in row:
