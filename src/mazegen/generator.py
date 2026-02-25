@@ -3,6 +3,7 @@ import random
 from dataclasses import dataclass
 from collections.abc import Callable
 from collections import deque
+from collections import defaultdict
 
 
 
@@ -211,19 +212,28 @@ class MazeGenerator:
             self._generate()
 
         def _generate(self) -> None:
-            self._init_row(self.maze.grid[0])
-            for row in self.maze.grid:
-                _carve_row(row)
-            for cell in self.maze.grid[0]:
-                print(f"{cell.set_id}")
+            self._reset_ids(self.maze.grid)
+            for index, row in enumerate(self.maze.grid):
+                self._horizontal_row_carving(row)
+                if index + 1 < self.maze.height:
+                    next_row = self.maze.grid[index + 1]
+                    self._vertical_row_carving(row, next_row)
             
-        def _init_row(self, row: list["MazeGenerator.Cell"]) -> None:
+        def _reset_ids(self, maze: "MazeGenerator.grid") -> None:
+            for row in maze:
+                for cell in row:
+                    if cell.set_id != -1:
+                        cell.set_id = -1
+
+        def _horizontal_row_carving(self,
+                                     row: list["MazeGenerator.Cell"]) -> None:
             i = 0
             ix = 0
 
             for cell in row:
-                cell.set_id = i
-                i += 1
+                if cell.set_id == -1:
+                    cell.set_id = i
+                    i += 1
             while ix in range(len(row) - 1):
                 cell_a = row[ix]
                 cell_b = row[ix + 1]
@@ -234,11 +244,36 @@ class MazeGenerator:
                     cell_b.west = False
                 ix += 1
 
-        def _carve_row(self, row: list["MazeGenerator.Cell"]):
-            #itterate over row and assign set_ids if not already
-            #randomly chose at least one south wall/set to take down
-            #take it down and assign the wall underneath to the corresponding set
+        def _vertical_row_carving(self, row: list["MazeGenerator.Cell"], 
+                       next_row: list["MazeGenerator.Cell"]) -> None:
+            sets = defaultdict(list)
 
+            for i, cell in enumerate(row):
+                sets[cell.set_id].append((i, cell))
+            for cell_ix, cell in enumerate(row):
+                self._open_vert(cell, cell_ix, next_row)
+            for set_id, group in sets.items():
+                vert = False
+                for (i, cell) in group:
+                    if cell.south == False:
+                        vert = True
+                if not vert:
+                    ix, chosen_cell = random.choice(group)
+                    self._open_vert(chosen_cell, ix, next_row, False)
+
+        def _open_vert(self, cell: "MazeGenerator.Cell", cell_ix: int,
+                       next_row: list["MazeGenerator.Cell"],
+                       rand: bool | None = None) -> None:
+            if rand is not None:
+                cell.south = False
+                next_row[cell_ix].nort = False
+                return
+            open_vert = random.choice(["True", "False"])
+            if open_vert == "True":
+                cell.south = False
+                next_row[cell_ix].north = False
+                next_row[cell_ix].set_id = cell.set_id
+     
     class BFS:
         def __init__(self, maze: "MazeGenerator") -> None:
             self.maze: MazeGenerator = maze
