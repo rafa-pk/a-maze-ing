@@ -1,10 +1,10 @@
-import sys
 import random
+from typing import Optional, Union
+from random import randint
 from dataclasses import dataclass
 from collections.abc import Callable
 from collections import deque
 from collections import defaultdict
-
 
 
 class MazeGenerator:
@@ -52,9 +52,10 @@ class MazeGenerator:
         visited: bool = False
         set_id: int = -1
 
-    def __init__(self, width: int, height: int, 
+    def __init__(self, width: int, height: int,
                  entry_point: tuple[int, int], exit_point: tuple[int, int],
-                 algo: str | None = None, seed: int | None = None) -> None:
+                 algo:
+                 Optional[str] = None, seed: Optional[int] = None) -> None:
         self.width = width
         self.height = height
         self.entry_point = entry_point
@@ -73,10 +74,11 @@ class MazeGenerator:
             [self.Cell(x=x, y=y) for x in range(self.width)]
             for y in range(self.height)
         ]
-    
-    def generate_maze(self, perfect: bool = True, 
-                      visualizer: Callable[..., None] |None = None) -> None: 
-        """""" 
+
+    def generate_maze(self, perfect: bool = True,
+                      visualizer:
+                      Optional[Callable[..., None]] = None) -> None:
+        """"""
         self.perfect = perfect
         self._place_42_pattern()
         if visualizer:
@@ -128,17 +130,14 @@ class MazeGenerator:
         elif dx == 0 and dy == -1:
             cell_a.north = False
             cell_b.south = False
-   
-    #def _make_unperfect(self):
-    #
 
     def create_output_file(self, output_filename: str) -> None:
-       
+
         BFS_solver = self.BFS(self)
         path = BFS_solver.get_path_string()
 
-        #if BFS_solver.path is None:
-        #    self.BFS()
+        if BFS_solver.path is None:
+            self.BFS()
         try:
             with open(output_filename, "w") as output_file:
                 for row in self.grid:
@@ -158,17 +157,17 @@ class MazeGenerator:
         row_in_hex: str = ""
 
         for cell in maze_row:
-            if cell.north == True:
+            bin_val = 0
+            if cell.north is True:
                 bin_val += 1
-            if cell.east == True:
+            if cell.east is True:
                 bin_val += 2
-            if cell.south == True:
+            if cell.south is True:
                 bin_val += 4
-            if cell.west == True:
+            if cell.west is True:
                 bin_val += 8
             row_in_hex += format(bin_val, "X")
         return row_in_hex
-
 
     class DFS:
         def __init__(self, maze: "MazeGenerator") -> None:
@@ -203,7 +202,7 @@ class MazeGenerator:
                     stack.append(chosen)
                 else:
                     stack.pop()
-            #if not self.maze.perfect:
+            # if not self.maze.perfect:                                         #TODO: si perfect=false, faut pouvoir le gerer sur DFS
             #    self.maze._make_unperfect()
 
     class Eller:
@@ -216,24 +215,24 @@ class MazeGenerator:
 
         def _generate(self) -> None:
             self._reset_ids(self.maze.grid)
-            for index, row in enumerate(self.maze.grid): 
+            for index, row in enumerate(self.maze.grid):
                 self._horizontal_row_carving(row)
                 if index + 1 < self.maze.height:
                     next_row = self.maze.grid[index + 1]
                     self._vertical_row_carving(row, next_row)
                 else:
                     self._open_last_row(row)
-            
-        def _reset_ids(self, maze: "MazeGenerator.grid") -> None:
+
+        def _reset_ids(self, maze) -> None:
             for row in maze:
                 for cell in row:
-                    if cell.visited:
+                    if (cell.x, cell.y) in self.maze.pattern_cells:
                         cell.set_id = -2
                     cell.set_id = -1
 
         def _horizontal_row_carving(self,
-                                     row: list["MazeGenerator.Cell"]) -> None:
-            
+                                    row: list["MazeGenerator.Cell"]) -> None:
+
             max_id = max((cell.set_id for cell in row), default=-1)
             i = max_id + 1
             ix = 0
@@ -249,15 +248,16 @@ class MazeGenerator:
                     continue
                 if cell_a.set_id != cell_b.set_id:
                     merging = random.random()
-                    if merging > 0.7:
+                    if merging > 0.35:
                         cell_a.east = False
                         cell_b.west = False
                         for cell in row:
-                            if cell.set_id == cell_b.set_id: 
+                            if cell.set_id == cell_b.set_id:
                                 cell.set_id = cell_a.set_id
 
-        def _vertical_row_carving(self, row: list["MazeGenerator.Cell"], 
-                       next_row: list["MazeGenerator.Cell"]) -> None:
+        def _vertical_row_carving(self, row: list["MazeGenerator.Cell"],
+                                  next_row:
+                                  list["MazeGenerator.Cell"]) -> None:
             sets = defaultdict(list)
 
             for i, cell in enumerate(row):
@@ -273,13 +273,12 @@ class MazeGenerator:
                     to_open = random.sample(group, k)
                     self._open_vert(to_open, next_row)
 
-
-        def _open_vert(self, to_open: CellTuple | TupList,
-                       next_row: list["MazeGenerator.Cell"],) -> None:
+        def _open_vert(self, to_open: Union[CellTuple, TupList],
+                       next_row: list["MazeGenerator.Cell"]) -> None:
             if isinstance(to_open, tuple):
                 i, cell = to_open
-                cell.south = False
                 if not next_row[i].visited:
+                    cell.south = False
                     next_row[i].north = False
                     next_row[i].set_id = cell.set_id
             else:
@@ -297,7 +296,7 @@ class MazeGenerator:
                     for cell in row:
                         if cell.set_id == row[ix + 1].set_id:
                             cell.set_id = row[ix].set_id
-     
+
     class BFS:
         def __init__(self, maze: "MazeGenerator") -> None:
             self.maze: MazeGenerator = maze
@@ -344,14 +343,14 @@ class MazeGenerator:
                             (neighbor, path + [direction])
                         )
             print("Error: no path found from entry to exit")
-    
+
         def get_path_string(self) -> str:
             return "".join(self.path)
 
     def print_grid(self, path: list = None) -> None:
         path_cells: set = set()
         if path:
-            cx, cy = self.entry
+            cx, cy = self.entry_point
             path_cells.add((cx, cy))
             for direction in path:
                 dx, dy = self.Directions[direction]

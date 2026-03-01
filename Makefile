@@ -6,7 +6,7 @@
 #    By: rvaz-da- <rvaz-da-@student.s19.be>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 18:24:00 by rvaz-da-          #+#    #+#              #
-#    Updated: 2026/02/17 18:27:30 by rvaz-da-         ###   ########.fr        #
+#    Updated: 2026/03/01 14:01:01 by rvaz-da-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,8 +27,7 @@ $(VENV)/bin/activate: requirements.txt
 	$(PY) -m venv $(VENV)
 	$(VENV_PIP) install --upgrade pip
 	$(VENV_PIP) install -r requirements.txt
-	tar -xf ./packages/mlx_CLXV-2.2.tar
-	$(VENV_PIP) install ./mlx_CLXV/python
+	$(VENV_PIP) install packages/mlx-2.2-py3-none-any.whl
 	@echo "Virtual environment setup complete!"
 
 

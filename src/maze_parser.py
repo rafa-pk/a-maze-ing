@@ -117,12 +117,16 @@ class MazeParser:
             print("Parsing error: PERFECT field must be of bool value "
                   "(True/False)")
             sys.exit(1)
-        algo_str = self.parameters.get("ALGORITHM")
-        if algo_str is not None:
-            self.algorithm = algo_str.strip()
-            if self.algorithm not in ["DFS", "Eller"]:
-                print(f"Parsing error: '{self.algorithm}' not supported")
-                sys.exit(1)
+        try:
+            algo_str = self.parameters.get("ALGORITHM")
+            if algo_str is not None:
+                self.algorithm = algo_str.strip()
+            if self.algorithm not in ["DFS", "Eller", None]:
+                raise ValueError(f"'{self.algorithm}' not supported, "
+                                 f"choose 'DFS' or 'Eller'")
+        except ValueError as error:
+            print(f"Parsing error: ALGORITHM: {error}")
+            sys.exit(1)
         seed_str = self.parameters.get("SEED")
         if seed_str is not None:
             try:
@@ -138,5 +142,12 @@ class MazeParser:
         # {self.output_file} perfect: {self.perfect}")
 
 
-# if __name__ == "__main__":
-#    MazeParser.parser(sys.argv[1])
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 a_maze_ing.py <config_file>")
+        sys.exit(1)
+    data = MazeParser.parser(sys.argv[1])
+    print(f"Width: {data.width}, Height: {data.height}")
+    print(f"Entry: {data.entry}, Exit: {data.exit}")
+    print(f"Perfect: {data.perfect}")
+    print(f"Output: {data.output_file}")
