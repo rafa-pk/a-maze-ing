@@ -6,7 +6,7 @@
 #    By: rvaz-da- <rvaz-da-@student.s19.be>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 18:24:00 by rvaz-da-          #+#    #+#              #
-#    Updated: 2026/03/01 14:01:01 by rvaz-da-         ###   ########.fr        #
+#    Updated: 2026/03/02 18:21:43 by rvaz-da-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,7 +43,6 @@ clean:
 	rm -rf $(SRC_DIR)/mazegen/__pycache__/
 	rm -rf .mypy_cache/
 	rm -rf $(VENV)
-	rm -rf mlx_CLXV
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	@echo "Cleanup complete!"

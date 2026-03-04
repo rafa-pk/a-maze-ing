@@ -4,15 +4,15 @@ from maze_parser import MazeParser
 from mazegen.generator import MazeGenerator
 from maze_display import MLXHandler
 
-class AMazeIng:
-    
+
+class AMazeIng: 
     def __init__(self, config_file: str) -> None:
         self.parameters = MazeParser.parser(config_file)
         self.generator = self.new_instance(self.parameters.algorithm,
                                            self.parameters.seed)
-        self.window = MLXHandler(self.parameters)
+        # self.window = MLXHandler(self.parameters)
         self.create_maze()
-        self.window.event_manager(self)
+        # self.window.event_manager(self)
 
     def new_instance(self, algo: Optional[str] = None,
                      seed: Optional[int] = None) -> MazeGenerator:
@@ -34,8 +34,13 @@ class AMazeIng:
         self.generator.create_output_file(self.parameters.output_file)
         print(f"Shortest path: {self.solver.get_path_string()}")
         self.generator.print_grid(path=self.solver.path)
+        for row in self.generator.grid:
+            for cell in row:
+                print(cell.set_id, end=" ")
+            print("")
+        self.generator.print_as_nodegraph()
 
-    #def maze_animation(self) -> None:
+    # def maze_animation(self) -> None:
     #    self.window.update_full_image(self, self.settings)
     #    self.window.write_to_window()
 

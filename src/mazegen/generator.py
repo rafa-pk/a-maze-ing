@@ -92,13 +92,12 @@ class MazeGenerator:
         return self.grid[y][x]
 
     def _place_42_pattern(self) -> None:
-        if (self.width < self.Pattern_width
-                or self.height < self.Pattern_height):
+        if (self.width < self.Min_width
+                or self.height < self.Min_height):
             print("Warning: maze too small for 42 pattern")
-            return
 
-        offset_x: int = (self.width - self.Min_width) // 2
-        offset_y: int = (self.height - self.Min_height) // 2
+        offset_x: int = (self.width - self.Pattern_width) // 2
+        offset_y: int = (self.height - self.Pattern_height) // 2
         for px, py in self.Digit_4:
             self.pattern_cells.add((offset_x + px, offset_y + py))
         for px, py in self.Digit_2:
@@ -216,22 +215,25 @@ class MazeGenerator:
         def _generate(self) -> None:
             self._reset_ids(self.maze.grid)
             for index, row in enumerate(self.maze.grid):
-                self._horizontal_row_carving(row)
                 if index + 1 < self.maze.height:
                     next_row = self.maze.grid[index + 1]
+                    self._horizontal_row_carving(row, next_row)
                     self._vertical_row_carving(row, next_row)
                 else:
+                    self._horizontal_row_carving(row)
                     self._open_last_row(row)
 
         def _reset_ids(self, maze) -> None:
             for row in maze:
                 for cell in row:
-                    if (cell.x, cell.y) in self.maze.pattern_cells:
+                    if cell.visited:
                         cell.set_id = -2
                     cell.set_id = -1
 
         def _horizontal_row_carving(self,
-                                    row: list["MazeGenerator.Cell"]) -> None:
+                                    row: list["MazeGenerator.Cell"],
+                                    next_row:
+                                    Optional[list["MazeGenerator.Cell"]] = None) -> None:
 
             max_id = max((cell.set_id for cell in row), default=-1)
             i = max_id + 1
@@ -244,15 +246,25 @@ class MazeGenerator:
             for ix in range(len(row) - 1):
                 cell_a = row[ix]
                 cell_b = row[ix + 1]
+                force_merge = False
                 if cell_a.visited or cell_b.visited:
                     continue
+                if next_row:
+                    cell_a_blocked = next_row[ix].visited
+                    cell_b_blocked = next_row[ix + 1].visited
+                else:
+                    cell_a_blocked = False
+                    cell_b_blocked = False
+                if cell_a_blocked != cell_b_blocked:
+                    force_merge = True
                 if cell_a.set_id != cell_b.set_id:
                     merging = random.random()
-                    if merging > 0.35:
+                    old_id = cell_b.set_id
+                    if force_merge or merging > 0.35:
                         cell_a.east = False
                         cell_b.west = False
                         for cell in row:
-                            if cell.set_id == cell_b.set_id:
+                            if cell.set_id == old_id:
                                 cell.set_id = cell_a.set_id
 
         def _vertical_row_carving(self, row: list["MazeGenerator.Cell"],
@@ -261,41 +273,69 @@ class MazeGenerator:
             sets = defaultdict(list)
 
             for i, cell in enumerate(row):
-                if not cell.visited:
+                if not cell.visited: #and not next_row[i].visited:
                     sets[cell.set_id].append((i, cell))
             if self.maze.perfect:
                 for set_id, group in sets.items():
-                    to_open = random.choice(group)
-                    self._open_vert(to_open, next_row)
+                    vert_possibilities = [(i, cell) for (i, cell) in group if not next_row[i].visited]
+                    if vert_possibilities:
+                        to_open = random.choice(vert_possibilities)
+                        self._open_vert(to_open, next_row)
+                    else:
+                        self._force_horizontal_merge(group, row)
+                
             else:
                 for set_id, group in sets.items():
                     k = randint(1, len(group))
                     to_open = random.sample(group, k)
                     self._open_vert(to_open, next_row)
 
+        def _force_horizontal_merge(self, group: TupList, row: list["MazeGenerator.Cell"]) -> None:
+            to_merge = 1
+
+            for i, cell_a in group:
+                for offset in [1, -1]:
+                    neighbour = i + offset
+                    if 0 <= neighbour < len(row):
+                        if row[neighbour].visited:
+                            continue
+                        cell_b = row[neighbour]
+                    if not cell_b.visited and cell_a.set_id != cell_b.set_id:
+                        old_id = cell_b.set_id
+                        if offset == 1:
+                            cell_a.east = False
+                            cell_b.west = False
+                        else:
+                            cell_a.west = False
+                            cell_b.east = False
+                        for cell in row:
+                            if cell.set_id == old_id:
+                                cell.set_id = cell_a.set_id
+                        return
+
         def _open_vert(self, to_open: Union[CellTuple, TupList],
                        next_row: list["MazeGenerator.Cell"]) -> None:
             if isinstance(to_open, tuple):
                 i, cell = to_open
-                if not next_row[i].visited:
-                    cell.south = False
-                    next_row[i].north = False
-                    next_row[i].set_id = cell.set_id
+                cell.south = False
+                next_row[i].north = False
+                next_row[i].set_id = cell.set_id
             else:
                 for i, cell in to_open:
                     cell.south = False
-                    if not next_row[i].visited:
-                        next_row[i].north = False
-                        next_row[i].set_id = cell.set_id
+                    next_row[i].north = False
+                    next_row[i].set_id = cell.set_id
 
         def _open_last_row(self, row: list["MazeGenerator.Cell"]) -> None:
             for ix in range(len(row) - 1):
                 if row[ix].set_id != row[ix + 1].set_id:
+                    new_id = row[ix].set_id
+                    old_id = row[ix + 1].set_id
                     row[ix].east = False
                     row[ix + 1].west = False
                     for cell in row:
-                        if cell.set_id == row[ix + 1].set_id:
-                            cell.set_id = row[ix].set_id
+                        if cell.set_id == old_id:
+                            cell.set_id = new_id
 
     class BFS:
         def __init__(self, maze: "MazeGenerator") -> None:
@@ -385,3 +425,48 @@ class MazeGenerator:
             bottom += "+" + ("---" if cell.south else "   ")
         bottom += "+"
         print(bottom)
+
+    def print_as_nodegraph(self):
+        """
+        Prints the maze as an adjacency list.
+        Format: (row, col) -> [(neighbor_row, neighbor_col), ...]
+        """
+        print("--- Maze Node Graph ---")
+        node_count = 0
+        edge_count = 0
+
+        for y in range(self.height):
+            for x in range(self.width):
+                # Skip the '42' pattern cells (the # cells in your representation)
+                if self.grid[y][x].visited: 
+                    continue
+            
+                node_count += 1
+                neighbors = []
+            
+                # Check East (if no wall and within bounds)
+                if x + 1 < self.width and not self.grid[y][x].east:
+                    if not self.grid[y][x+1].visited:
+                        neighbors.append(f"({y}, {x+1})")
+                        edge_count += 1
+            
+                # Check South (if no wall and within bounds)
+                if y + 1 < self.height and not self.grid[y][x].south:
+                    if not self.grid[y+1][x].visited:
+                        neighbors.append(f"({y+1}, {x})")
+                        edge_count += 1
+
+                # Print the adjacency list for this node
+                if neighbors:
+                    print(f"({y}, {x}) connects to: {', '.join(neighbors)}")
+
+        print("-----------------------")
+        print(f"Total Reachable Nodes (V): {node_count}")
+        # Each edge is counted once in this logic (checking only East/South)
+        print(f"Total Unique Edges (E): {edge_count}")
+    
+        # The Perfection Test
+        if edge_count == node_count - 1:
+            print("Result: Tree structure detected (Potential Perfect Maze).")
+        else:
+            print(f"Result: NOT PERFECT. Edges ({edge_count}) != V-1 ({node_count-1})")
