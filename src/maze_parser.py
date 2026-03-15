@@ -57,7 +57,6 @@ class MazeParser:
         self.algorithm = None
         self.seed = None
 
-        # print(f"Passed in dictionary {self.parameters}")
         try:
             for key in self.MandatoryKeys:
                 if self.parameters.get(key.value) is None:
@@ -137,9 +136,6 @@ class MazeParser:
             except ValueError as error:
                 print(f"Parsing error: SEED: {error}")
                 sys.exit(1)
-        # print(f"Attributes: width: {self.width} height: {self.height} entry
-        # point: {self.entry} exit point: {self.exit} output file:
-        # {self.output_file} perfect: {self.perfect}")
 
 
 if __name__ == "__main__":

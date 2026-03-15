@@ -12,7 +12,7 @@ except ImportError:
 class MlxWrapper:
     def __init__(self) -> None:
         self.lib = Mlx()
-    
+
     def init(self) -> any:
         return self.lib.mlx_init()
 
@@ -34,6 +34,12 @@ class MlxWrapper:
     def loop_hook(self, *args) -> Any:
         return self.lib.mlx_loop_hook(*args)
 
+    def key_hook(self, *args) -> Any:
+        return self.lib.mlx_key_hook(*args)
+
+    def hook(self, *args) -> Any:
+        return self.lib.mlx_hook(*args)
+    
     def image_to_window(self, *args) -> Any:
         return self.lib.mlx_put_image_to_window(*args)
 
@@ -46,14 +52,16 @@ class MlxWrapper:
     def putstr(self, *args) -> Any:
         return self.lib.mlx_string_put(*args)
 
+    def exit(self, *args) -> Any:
+        return self.lib.mlx_loop_exit(*args)
 
 class MLXHandler:
     def __init__(self, settings: "MazeParser"):
         self.mlx = MlxWrapper()
         self.ptr = self.mlx.init()
         self.cell_size = self._get_cell_size(settings.width, settings.height)
-        self.window_height = settings.height * self.cell_size
-        self.window_width = settings.width * self.cell_size
+        self.window_height = settings.height * self.cell_size + 2
+        self.window_width = settings.width * self.cell_size + 2
         self.window = self.mlx.new_window(self.ptr, self.window_width,
                                           self.window_height,
                                           "A_Maze_Ing@19")
@@ -74,11 +82,32 @@ class MLXHandler:
     def write_to_window(self, *args: any) -> None:
         if not self.window:
             return
-        self.mlx.image_to_window(self.ptr, self.window, self.image, 0, 0)
-        self.mlx.do_sync(self.ptr)
+        ptr, window, image = args
+        self.mlx.image_to_window(ptr, window, image, 0, 0)
+        self.mlx.do_sync(ptr)
 
+    def pixel_to_buff(self, x: int, y: int, color: int):
+        if 0 <= x < self.window_width and 0 <= y < self.window_height:
+            offset = (y * self.bpr) + (x * (self.bpp // 8))
+            self.image_buffer[offset] = color & 0XFF
+            self.image_buffer[offset + 1] = (color >> 8) & 0XFF
+            self.image_buffer[offset + 2] = (color >> 16) & 0XFF
+            self.image_buffer[offset + 3] = 0xFF 
+
+    def draw_rect(self, color: int, start_x: int, start_y: int, width: int, height: int) -> None:
+        for y in range(start_y, start_y + height):
+            for x in range(start_x, start_x + width):
+                self.pixel_to_buff(x, y, color)
+   
+    def close(self, param: any) -> Any:
+        self.mlx.exit(self.ptr)
+ 
     def event_manager(self, program: "AMazeIng") -> None:
-        self.mlx.expose_hook(self.window, self.write_to_window, None)
-        # self.mlx.loop_hook(self.ptr, ?, None) #program.create_maze
+        self.mlx.expose_hook(self.window, program.maze_view, (self.ptr, self.window, self.image))
+        self.mlx.key_hook(self.window, program.key_handler, program)
+        #self.mlx.mouse_hook()
+        #self.mlx.expose_hook()
+        self.mlx.hook(self.window, 33, 0, self.close, None)
+        #self.mlx.loop_hook(self, self.window, self.image))
         self.mlx.loop(self.ptr)
-
+        sys.exit(0)
