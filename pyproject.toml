@@ -5,10 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mazegenerator"
 version = "1.0.0"
-authors = [{Name = "rvaz-da-", email = "rvaz-da-@student.42belgium.be"},
-			{Name = "amaazouz", email = "amaazouz@student.42belgium.be"}]
+authors = [{name = "rvaz-da-", email = "rvaz-da-@student.42belgium.be"},
+			{name = "amaazouz", email = "amaazouz@student.42belgium.be"}]
 description = "Reusable maze generator developed during A-Maze-Ing"
 requires-python = ">=3.10"
 
 [tool.setuptools]
-packages = ["mazegenerator"]
+package-dir = {"" = "src"}
+packages = ["mazegen"]

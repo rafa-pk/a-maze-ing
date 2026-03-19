@@ -6,7 +6,7 @@
 #    By: rvaz-da- <rvaz-da-@student.s19.be>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 18:24:00 by rvaz-da-          #+#    #+#              #
-#    Updated: 2026/03/02 18:21:43 by rvaz-da-         ###   ########.fr        #
+#    Updated: 2026/03/19 22:46:09 by rvaz-da-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,3 +54,7 @@ lint: $(VENV)/bin/activate
 lint-strict: $(VENV)/bin/activate
 	$(PYTHON) -m flake8 $(SRC_DIR)/
 	$(PYTHON) -m mypy $(SRC_DIR)/ --strict
+
+build: $(VENV)/bin/activate
+	$(PYTHON) -m build
+	@mv dist/mazegenerator-*.whl ./packages

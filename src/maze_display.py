@@ -60,10 +60,10 @@ class MLXHandler:
         self.mlx = MlxWrapper()
         self.ptr = self.mlx.init()
         self.cell_size = self._get_cell_size(settings.width, settings.height)
-        self.window_height = settings.height * self.cell_size + 2
-        self.window_width = settings.width * self.cell_size + 2
+        self.window_height = settings.height * self.cell_size + self.cell_size
+        self.window_width = settings.width * self.cell_size
         self.window = self.mlx.new_window(self.ptr, self.window_width,
-                                          self.window_height,
+                                          self.window_height + 3 * self.cell_size,
                                           "A_Maze_Ing@19")
         self.image = self.mlx.new_image(self.ptr, self.window_width,
                                         self.window_height)
@@ -71,6 +71,32 @@ class MLXHandler:
         self.image_buffer = self.data_tup[0]
         self.bpp = self.data_tup[1]
         self.bpr = self.data_tup[2]
+        self.color_scheme = {
+                        1: {
+                            "border": 0X1919A6,
+                            "logo": 0XFFFFFF,
+                            "path": 0XFF0000,
+                            "bg": 0X000000,
+                        },
+                        2: {
+                            "border": 0XFF5C00,
+                            "logo": 0XC11C84,
+                            "path": 0X228B22,
+                            "bg": 0X000000,
+                        },
+                        3: {
+                            "border": 0X8FD9FB,
+                            "logo": 0XFFF01F,
+                            "path": 0XFF00FF,
+                            "bg": 0X000000,
+                        },
+                        4: {
+                            "border": 0XFF3131,
+                            "logo": 0x000000,
+                            "path": 0X1F51FF,
+                            "bg": 0XA9A9A9,
+                        }
+            }
 
     def _get_cell_size(self, width: int, height: int) -> int:
         window_size = (1600, 1000)
@@ -101,9 +127,9 @@ class MLXHandler:
    
     def close(self, param: any) -> Any:
         self.mlx.exit(self.ptr)
- 
+
     def event_manager(self, program: "AMazeIng") -> None:
-        self.mlx.expose_hook(self.window, program.maze_view, (self.ptr, self.window, self.image))
+        self.mlx.expose_hook(self.window, program.maze_view, (self.ptr, self.window, self.image, False))
         self.mlx.key_hook(self.window, program.key_handler, program)
         #self.mlx.mouse_hook()
         #self.mlx.expose_hook()

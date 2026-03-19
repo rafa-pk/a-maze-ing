@@ -11,9 +11,10 @@ class AMazeIng:
         self.generator = self.new_instance(self.parameters.algorithm,
                                            self.parameters.seed)
         self.window = MLXHandler(self.parameters)
+        self.color_ix = 1
         self.create_maze()
         self.window.event_manager(self)
-
+        
     def new_instance(self, algo: Optional[str] = None,
                      seed: Optional[int] = None) -> MazeGenerator:
         """"""
@@ -39,21 +40,50 @@ class AMazeIng:
         self.generator.print_as_nodegraph()
 
     def maze_view(self, args: any) -> None:
-        ptr, window, image = args
-        self.grid_to_image(path=self.solver.path)
+        ptr, window, image, path = args
+        self.path_flag = path
+        if self.path_flag:
+            self.grid_to_image(self.color_ix, path=self.solver.path)
+        else:
+            self.grid_to_image(self.color_ix, path=None)
         self.window.write_to_window(ptr, window, image)
+        self.window.mlx.putstr(ptr, window, self.window.window_width // 5, 
+                                self.window.window_height + self.window.cell_size, 0XFFFFFF, 
+                               "ESC: quit; 1: path; 2: regen; 3: color; 4: algo")
 
     def key_handler(self, keycode: int, program: "AMazeIng") -> None:
-        if keycode == 65307:
-            self.window.mlx.exit(self.window.ptr) 
-
-    def grid_to_image(self, path: list = None) -> None:
+        if keycode == 65307: #ESC: quit
+            self.window.mlx.exit(self.window.ptr)
+        elif keycode == 49: #1: path/no_path
+            if self.path_flag:
+                self.maze_view((self.window.ptr, self.window.window, self.window.image, False))
+            else:
+                self.maze_view((self.window.ptr, self.window.window, self.window.image, True))
+        elif keycode == 50: #2: regen
+            self.create_maze(self.new_instance(self.parameters.algorithm))
+            self.maze_view((self.window.ptr, self.window.window, self.window.image, False))
+        elif keycode == 51: #3: change colors
+            if self.color_ix + 1 > len(self.window.color_scheme):
+                self.color_ix = 1
+            else:
+                self.color_ix += 1
+            self.maze_view((self.window.ptr, self.window.window, self.window.image, False))
+        elif keycode == 52: #4: regen with other algo
+            if self.parameters.algorithm is None or self.parameters.algorithm == "DFS":
+                self.create_maze(self.new_instance("Eller"))
+                self.parameters.algorithm = "Eller"
+            elif self.parameters.algorithm == "Eller":
+                self.create_maze(self.new_instance("DFS"))
+                self.parameters.algorithm = "DFS"
+            self.maze_view((self.window.ptr, self.window.window, self.window.image, False))
+            
+    def grid_to_image(self, ix: int, path: list = None) -> None:
         CELL_SIZE = self.window.cell_size
         BORDER_WIDTH = 2
-        BORDER_COLOR = 0X1919A6
-        LOGO_COLOR = 0xFFFFFF 
-        PATH_COLOR = 0XFF0000
-        BG_COLOR = 0X000000
+        BORDER_COLOR = self.window.color_scheme[ix]["border"]
+        LOGO_COLOR = self.window.color_scheme[ix]["logo"]
+        PATH_COLOR = self.window.color_scheme[ix]["path"]
+        BG_COLOR = self.window.color_scheme[ix]["bg"]
 
         path_cells: set = set()
         if path:
@@ -72,9 +102,10 @@ class AMazeIng:
                 py = y * CELL_SIZE
                 if (x, y) in path_cells:
                     color = PATH_COLOR
+                    self.window.draw_rect(color, px, py, CELL_SIZE - 2, CELL_SIZE - 2)
                 else:
                     color = BG_COLOR
-                self.window.draw_rect(color, px, py, CELL_SIZE, CELL_SIZE)
+                    self.window.draw_rect(color, px, py, CELL_SIZE, CELL_SIZE)
                 if cell.north:
                     self.window.draw_rect(BORDER_COLOR, px, py, CELL_SIZE, BORDER_WIDTH)
                 if cell.south:
@@ -89,9 +120,6 @@ class AMazeIng:
                     self.window.draw_rect(0X00FF00, px, py, CELL_SIZE, CELL_SIZE)
                 if (x, y) == self.generator.exit_point:
                     self.window.draw_rect(0X0096FF, px, py, CELL_SIZE, CELL_SIZE)
-
-
-
     
 def main() -> None:
     """"""
