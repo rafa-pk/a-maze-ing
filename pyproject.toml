@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mazegenerator"
+name = "mazegen"
 version = "1.0.0"
 authors = [{name = "rvaz-da-", email = "rvaz-da-@student.42belgium.be"},
 			{name = "amaazouz", email = "amaazouz@student.42belgium.be"}]

@@ -103,13 +103,15 @@ To ensure modularity, the core maze generation logic is isolated in a separate p
 How to use?
 
 ```
-from mazegen import MazeGenerator
+from mazegen.generator import MazeGenerator
 
-# Instantiate the generator
-generator = MazeGenerator(<settings>)
+# Instantiate the generator and structure
+maze = MazeGenerator(<settings>)
 
-# Generate and access structure
-maze = generator.generate_maze(<perfect>)
+# Generate maze
+generator.generate_maze(<perfect>)
+
+# Generate solution - str of N/E/W/S instructions
 solution = generator.BFS()
 
 ```
@@ -125,7 +127,7 @@ solution = generator.BFS()
 | amaazouz | BFS, DFS, graphical bonuses, norm-compliance |
 | rvaz-da- | Parsing, graphical display, Eller's algorithm, README.md |
 
-### Planning1
+### Planning
 
 **Anticipated plan:**
 We did not really plan enough at the beginning, we thought of firstly just take care of the base algorithms and logic, and only after thinkign about MLX and bonuses.

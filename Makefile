@@ -6,7 +6,7 @@
 #    By: rvaz-da- <rvaz-da-@student.s19.be>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/01 18:24:00 by rvaz-da-          #+#    #+#              #
-#    Updated: 2026/03/19 22:46:09 by rvaz-da-         ###   ########.fr        #
+#    Updated: 2026/03/23 16:12:43 by rvaz-da-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -57,4 +57,4 @@ lint-strict: $(VENV)/bin/activate
 
 build: $(VENV)/bin/activate
 	$(PYTHON) -m build
-	@mv dist/mazegenerator-*.whl ./packages
+	@mv dist/mazegen-*.whl ./packages
