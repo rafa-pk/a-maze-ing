@@ -14,14 +14,14 @@ The maze gets output to a file in a hexadecimal wall representation and graphica
 
 ### Maze Generation Algorithm
 
-**Algorithm choice:** Recursive Backtracking (BFS), Eller's
+**Algorithm choice:** Recursive Backtracking (DFS), Eller's
 
 **How they work:**
-Our main algorithm is BFS, which is a graph traversal algorithm. It starts from the entry point and it visits all cells adjacent to the entry. Then moves on to visiting the adjacent cells of the previously visited cells, and continues to do so until everything has been visited.
+Our main algorithm is DFS, which is a graph traversal algorithm. It starts from the entry point and it visits all cells adjacent to the entry. Then moves on to visiting the adjacent cells of the previously visited cells, and continues to do so until everything has been visited.
 Eller's algorithm works in a very different way, it is a set theory-based algorithm. It generates the maze line by line, by randomly merging adjacent sets and randomly opening a downward wall per set. It allows for infinitely large maze generation in linear time.
 
 **Why we chose them:**
-The BFS algorithm came quite naturally, having a very nice difficulty to efficiency ratio. It is a quite easy to implement algorithm, which works very well. We thought we'd first secure the mandatory part with it. The Eller's algorithm came in an attempt to learn and implement a new algorithm, we hesitated between Eller's and Kruskal, but Eller's looked both cooler and harder, which were the defining factors. Of course, its efficiency is also a positive point.
+The DFS algorithm came quite naturally, having a very nice difficulty to efficiency ratio. It is a quite easy to implement algorithm, which works very well. We thought we'd first secure the mandatory part with it. The Eller's algorithm came in an attempt to learn and implement a new algorithm, we hesitated between Eller's and Kruskal, but Eller's looked both cooler and harder, which were the defining factors. Of course, its efficiency is also a positive point.
 
 ---
 
@@ -38,7 +38,7 @@ The BFS algorithm came quite naturally, having a very nice difficulty to efficie
 | `EXIT` | `67,58` | coordinates of maze exit (x,y) |
 | `OUTPUT_FILE` | `maze.txt` | filename of hex output |
 | `PERFECT` | `True` | perfect/non-perfect maze toggle |
-| `ALGORITHM` |  `Eller` | (optional) choice of algorithm, defaults to BFS |
+| `ALGORITHM` |  `Eller` | (optional) choice of algorithm, defaults to DFS |
 | `SEED` | `80` | (optional) seed for reproducibility |
 
 Algorithm and seed entries do not need to be in the config file and are optional.
@@ -56,6 +56,8 @@ make run            # Runs the program
 
 make lint           # Verifies flake8 and mypy norm conventions
 
+make lint-strict	# Verifies flake8 and mypy with stricter typehinting requirements
+
 make clean          # Cleans cache files
 
 make build          # Creates .whl package
@@ -64,7 +66,7 @@ make build          # Creates .whl package
 ### Execution
 
 ```bash
-python3 <config_file>
+python3 <config_file> (executed by make run)
 ```
 
 **Actions**
@@ -84,8 +86,8 @@ When the program gets run, multiple actions are available to interact with the M
 
 ## Features
 
-- [x] Maze generation with BFS
-- [x] Path-finding algorithm with DFS
+- [x] Maze generation with DFS
+- [x] Path-finding algorithm with BFS
 - [x] Graphical window management
 - [x] *(Advanced)* Second maze generation algorithm
 - [x] *(Advanced)* Maze path animations on display
@@ -107,8 +109,8 @@ from mazegen import MazeGenerator
 generator = MazeGenerator(<settings>)
 
 # Generate and access structure
-maze = generator.generate_maze()
-solution = generator.DFS()
+maze = generator.generate_maze(<perfect>)
+solution = generator.BFS()
 
 ```
 
@@ -120,10 +122,10 @@ solution = generator.DFS()
 
 | Login | Roles |
 |-------|---------|
-| rvaz-da- | BFS, DFS, graphical bonuses, norm-compliance |
-| amaazouz | Parsing, Eller's algorithm, README.md |
+| amaazouz | BFS, DFS, graphical bonuses, norm-compliance |
+| rvaz-da- | Parsing, graphical display, Eller's algorithm, README.md |
 
-### Planning
+### Planning1
 
 **Anticipated plan:**
 We did not really plan enough at the beginning, we thought of firstly just take care of the base algorithms and logic, and only after thinkign about MLX and bonuses.
